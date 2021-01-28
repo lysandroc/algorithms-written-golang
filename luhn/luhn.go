@@ -1,46 +1,46 @@
 package luhn
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 )
 
-// treatCardNumber returns the check digit and the rest of card number reversed
-func treatCardNumber(cardNumber string) (string, string) {
-	reverseCardNumber := ""
-	for _, v := range cardNumber {
-		reverseCardNumber = string(v) + reverseCardNumber
-	}
-
-	return reverseCardNumber[:1], reverseCardNumber[1:]
-}
-
-// Valid verify wether card number is valid or not
-func Valid(cardNumber string) bool {
+// splitCardNumber returns the check digit and the rest of card number reversed
+func treatCardNumber(cardNumber string) (checkDigit int, reverseCardNumber string, err error) {
 	cardNumber = strings.ReplaceAll(cardNumber, " ", "")
 	cardNumber = strings.TrimSpace(cardNumber)
 
 	if len(cardNumber) <= 1 {
-		return false
+		return 0, "", fmt.Errorf("the card number length is invalid!")
 	}
 
-	checkDigitChar, digits := treatCardNumber(cardNumber)
+	for _, v := range cardNumber {
+		reverseCardNumber = string(v) + reverseCardNumber
+	}
 
-	checkDigit, err := strconv.Atoi(string(checkDigitChar))
+	digitCheck, err := strconv.Atoi(string(reverseCardNumber[:1]))
+
+	return digitCheck, reverseCardNumber[1:], err
+}
+
+// Valid verify wether card number is valid or not
+func Valid(cardNumber string) bool {
+	var sum int
+
+	checkDigit, digits, err := treatCardNumber(cardNumber)
 	if err != nil {
 		return false
 	}
 
-	sum := 0
 	for i, digit := range digits {
 		digit, err := strconv.Atoi(string(digit))
 		if err != nil {
 			return false
 		}
 
-		if i%2 == 0 {
-			digit = digit * 2
-			if digit > 9 {
+		if isEven := i%2 == 0; isEven {
+			if digit = digit * 2; digit > 9 {
 				digit -= 9
 			}
 		}
