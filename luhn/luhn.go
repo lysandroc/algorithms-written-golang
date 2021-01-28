@@ -1,31 +1,51 @@
 package luhn
 
 import (
-	"fmt"
+	"strconv"
 	"strings"
 )
 
-func Valid(digits string) bool {
-	if len(digits) <= 1 {
+// treatCardNumber returns the check digit and the rest of card number reversed
+func treatCardNumber(cardNumber string) (string, string) {
+	reverseCardNumber := ""
+	for _, v := range cardNumber {
+		reverseCardNumber = string(v) + reverseCardNumber
+	}
+
+	return reverseCardNumber[:1], reverseCardNumber[1:]
+}
+
+// Valid verify wether card number is valid or not
+func Valid(cardNumber string) bool {
+	cardNumber = strings.ReplaceAll(cardNumber, " ", "")
+	cardNumber = strings.TrimSpace(cardNumber)
+
+	if len(cardNumber) <= 1 {
 		return false
 	}
 
-	digits = strings.Trim(digits, " ")
-	digits = digits[:len(digits)-1]
-	fmt.Println(digits)
+	checkDigitChar, digits := treatCardNumber(cardNumber)
 
-	sum := 0
-	for i := len(digits); i <= 0; i-- {
-		if digits[i]%2 == 0 {
-			doubleSum := int(digits[i]) * 2
-			if doubleSum > 9 {
-				doubleSum -= 9
-			}
-			sum += doubleSum
-		} else {
-			sum += int(digits[i])
-		}
+	checkDigit, err := strconv.Atoi(string(checkDigitChar))
+	if err != nil {
+		return false
 	}
 
-	return sum%10 == 0
+	sum := 0
+	for i, digit := range digits {
+		digit, err := strconv.Atoi(string(digit))
+		if err != nil {
+			return false
+		}
+
+		if i%2 == 0 {
+			digit = digit * 2
+			if digit > 9 {
+				digit -= 9
+			}
+		}
+		sum += digit
+	}
+
+	return (sum+checkDigit)%10 == 0
 }
